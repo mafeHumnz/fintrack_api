@@ -1,66 +1,73 @@
 import bcrypt from "bcrypt";
 import {prisma} from "../config/prisma.js";
 import {generateToken} from "../utils/generateToken.js";
+import {env} from "../config/env.js";
 
-interface registerUser{
+interface RegisterData{
     name: string;
     email: string;
     password: string;
 }
 
-interface loginUser{
+interface LoginData{
     email: string;
     password: string;
 }
 
-export const register = async (user: registerUser) => {
-    const {name, email, password} = user;
+class AuthService {
+    async register(data: RegisterData) {
+        const {name, email, password} = data;
 
-    // Check if the user already exists
-    const existingUser = await prisma.user.findUnique({
-        where: {email},
-    });
+        // Check if user already exists
+        const existingUser = await prisma.user.findUnique({
+            where: {email},
+        });
 
-    if (existingUser) {
-        throw new Error("User already exists");
+        if (existingUser) {
+            throw new Error("User already exists");
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Create the user
+        const user = await prisma.user.create({
+            data: {
+                name,
+                email,
+                password: hashedPassword,
+            },
+        });
+
+        const {password: _, ...userWithoutPassword} = user;
+
+        return userWithoutPassword;
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    async login(data: LoginData) {
+        const {email, password} = data;
+        
+        // Find the user by email
+        const user = await prisma.user.findUnique({
+            where: {email},
+        });
 
-    // Create the new user
-    const newUser = await prisma.user.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword,
-        },
-    });
+        if (!user) {
+            throw new Error("Invalid email or password");
+        }
 
-    return newUser;
-};
+        // Compare the provided password with the hashed password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
 
-export const login = async (user: loginUser) => {
-    const {email, password} = user;
+        if (!isPasswordValid) {
+            throw new Error("Invalid email or password");
+        }
 
-    // Find the user by email
-    const existingUser = await prisma.user.findUnique({
-        where: {email},
-    });
+        // Generate a JWT token
+        const token = generateToken(user.id);
 
-    if (!existingUser) {
-        throw new Error("User not found");
+        return {token};
     }
-
-    // Compare the provided password with the hashed password
-    const isPasswordValid = await bcrypt.compare(password, existingUser.password);
-
-    if (!isPasswordValid) {
-        throw new Error("Invalid password");
-    }
-
-    const token = generateToken(existingUser.id);
-    return token;
 }
 
-    
+export default new AuthService();
