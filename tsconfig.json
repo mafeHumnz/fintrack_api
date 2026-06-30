@@ -3,17 +3,21 @@
     "outDir": "./dist",
 
     "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "moduleResolution": "nodenext",
 
-    "target": "esnext",
+    "target": "es2023",
 
     "types": ["node"],
 
     "strict": true,
 
+    "allowJs": true,
+
     "jsx": "react-jsx",
 
     "esModuleInterop": true,
+
+    "ignoreDeprecations": "6.0",
 
     "sourceMap": true,
 
@@ -21,7 +25,7 @@
 
     "isolatedModules": true,
 
-    "verbatimModuleSyntax": true
+    //"verbatimModuleSyntax": true
   },
 
   "include": [
