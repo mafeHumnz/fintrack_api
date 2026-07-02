@@ -1,0 +1,29 @@
+node_modules
+dist
+build
+.DS_Store
+*.log
+npm-debug.log
+yarn-error.log
+
+# Env / secrets
+.env
+#.env.*
+!.env.example
+
+# Git / editor / IDE
+.git
+.gitignore
+.vscode
+.idea
+
+# Docker / local
+.dockerignore
+docker-compose.override.yml
+
+# OS / cache / tests
+coverage
+.cache
+*.tmp
+*.swp
+
