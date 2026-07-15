@@ -8,20 +8,20 @@ class AccountRepository {
         });
     }
 
-    async findById(id: number) {
+    async findById(id: string) {
         return prisma.account.findUnique({
             where: { id },
         });
     }
 
-    async findAllByUserId(userId: number) {
+    async findAllByUserId(userId: string) {
         return prisma.account.findMany({
             where: { userId },
         });
     }
 
     async update(
-        id: number,
+        id: string,
         data: Prisma.AccountUpdateInput
     ) {
         return prisma.account.update({
@@ -30,7 +30,7 @@ class AccountRepository {
         });
     }
 
-    async delete(id: number) {
+    async delete(id: string) {
         return prisma.account.delete({
             where: { id },
         });
