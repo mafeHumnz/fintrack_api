@@ -14,80 +14,80 @@ datasource db {
 // Define your database models here
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
+  id         String     @id @default(uuid())
+  name       String
+  email      String     @unique
+  password   String
   accounts   Account[]
-  categories  Category[]
+  categories Category[]
   budgets    Budget[]
   goals      Goal[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
 }
 
 model Account {
-  id        Int      @id @default(autoincrement())
-  name      String
-  balance   Float    @default(0)
-  currency  String   @default("COP")
-  type      String   @default("Cash")
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  id           String        @id @default(uuid())
+  name         String
+  balance      Float         @default(0)
+  currency     String        @default("COP")
+  type         String        @default("Cash")
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Category {
-  id        Int      @id @default(autoincrement())
-  name      String
-  type      String   @default("Expense")
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  id           String        @id @default(uuid())
+  name         String
+  type         String        @default("Expense")
+  userId       String
+  user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
-  budgets    Budget[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  budgets      Budget[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Budget {
-  id        Int      @id @default(autoincrement())
-  name      String
-  amount    Float
-  month     Int
-  year      Int
-  userId    Int
-  categoryId Int
-  category  Category @relation(fields: [categoryId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id         String   @id @default(uuid())
+  name       String
+  amount     Float
+  month      Int
+  year       Int
+  userId     String
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Goal {
-  id        Int      @id @default(autoincrement())
-  name      String
-  targetAmount    Float
-  currentAmount   Float    @default(0)
-  targetDate   DateTime
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String   @id @default(uuid())
+  name          String
+  targetAmount  Float
+  currentAmount Float    @default(0)
+  targetDate    DateTime
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Transaction {
-  id          Int      @id @default(autoincrement())
+  id          String    @id @default(uuid())
   amount      Float
   description String?
-  type        String   @default("Expense")
-  date        DateTime @default(now())
-  accountId   Int
-  account     Account  @relation(fields: [accountId], references: [id])
-  categoryId  Int?
+  type        String    @default("Expense")
+  date        DateTime  @default(now())
+  accountId   String
+  account     Account   @relation(fields: [accountId], references: [id])
+  categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
