@@ -78,6 +78,67 @@ class CategoryController {
             });
         }
     }
+
+    async update(req: Request, res: Response) {
+        try {
+            const id = req.params.id as string;
+            const userId = req.user!.id;
+
+            const category = await categoryService.update(
+                id,
+                req.body,
+                userId
+            );
+
+            if (!category) {
+                return res.status(404).json({
+                    message: "Category not found",
+                });
+            }
+
+            return res.status(200).json(category);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(400).json({
+                    message: error.message,
+                });
+            }
+
+            return res.status(500).json({
+                message: "Internal server error",
+            });
+        }
+    }
+
+    async delete(req: Request, res: Response) {
+        try {
+            const id = req.params.id as string;
+            const userId = req.user!.id;
+
+            const deleted = await categoryService.delete(
+                id,
+                userId
+            );
+
+            if (!deleted) {
+                return res.status(404).json({
+                    message: "Category not found",
+                });
+            }
+
+            return res.status(204).send();
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(400).json({
+                    message: error.message,
+                });
+            }
+
+            return res.status(500).json({
+                message: "Internal server error",
+            });
+        }
+    }
 }
 
 export const categoryController = new CategoryController();
