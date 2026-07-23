@@ -14,9 +14,16 @@ class TransactionRepository {
         });
     }
 
-    async findAllByAccountId(accountId: string) {
+    async findAllByUserId(userId: string) {
         return prisma.transaction.findMany({
-            where: { accountId },
+            where: {
+                account: {
+                    userId,
+                },
+            },
+            orderBy: {
+                date: 'desc',
+            },
         });
     }
 
