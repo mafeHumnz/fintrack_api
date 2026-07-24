@@ -46,7 +46,10 @@ class TransactionService {
         }
 
         return transactionRepository.create({
-            ...data,
+            amount: data.amount,
+            description: data.description,
+            type: data.type,
+            date: data.date,
             account: {
                 connect: { id: data.accountId },
             },
