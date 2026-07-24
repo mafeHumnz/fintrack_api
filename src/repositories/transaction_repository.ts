@@ -42,6 +42,22 @@ class TransactionRepository {
             where: { id },
         });
     }
+
+    async getTotalExpensesByUserId(userId: string) {
+        const result = await prisma.transaction.aggregate({
+            where: {
+                account: {
+                    userId,
+                },
+                type: 'expense',
+            },
+            _sum: {
+                amount: true,
+            },
+        });
+
+        return result._sum.amount || 0;
+    }
 }
 
 export const transactionRepository = new TransactionRepository();
