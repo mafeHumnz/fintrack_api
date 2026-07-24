@@ -42,6 +42,27 @@ class TransactionRepository {
             where: { id },
         });
     }
+
+    async getTotalExpensesByCategory(userId: string, categoryId: string, month: number, year: number) {
+        const result = await prisma.transaction.aggregate({
+            where: {
+                account: {
+                    userId,
+                },
+                type: 'Expense',
+                categoryId,
+                date: {
+                    gte: new Date(year, month - 1, 1),
+                    lt: new Date(year, month, 1),
+                },
+            },
+            _sum: {
+                amount: true,
+            },
+        });
+
+        return result._sum.amount ?? 0;
+    }
 }
 
 export const transactionRepository = new TransactionRepository();
