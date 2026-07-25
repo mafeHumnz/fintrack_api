@@ -40,6 +40,16 @@ class BudgetRepository {
             where: { id },
         });
     }
+
+    findbyCategoryAndPeriod(userId: string, categoryId: string, month: number, year: number) {
+        return prisma.budget.findFirst({
+            where: {
+                categoryId,
+                month,
+                year,
+            },
+        });
+    }
 }
 
 export const budgetRepository = new BudgetRepository();
