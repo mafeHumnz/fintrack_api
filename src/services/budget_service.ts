@@ -31,6 +31,20 @@ class BudgetService {
             );
         }
 
+        const existingBudget = await budgetRepository.findbyCategoryAndPeriod(
+            userId,
+            data.categoryId,
+            data.month,
+            data.year
+        );
+        
+        if (existingBudget) {
+            throw new Error(
+                'A budget already exists for this category and period'
+            );
+        }
+
+
         return budgetRepository.create({
             name: data.name,
             amount: data.amount,
