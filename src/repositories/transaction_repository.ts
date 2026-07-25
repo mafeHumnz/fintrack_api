@@ -49,7 +49,7 @@ class TransactionRepository {
                 account: {
                     userId,
                 },
-                type: 'Expense',
+                type: 'EXPENSE',
                 categoryId,
                 date: {
                     gte: new Date(year, month - 1, 1),
