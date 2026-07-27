@@ -5,7 +5,7 @@ export const categorySchema = z.object({
     type: z.enum(["INCOME", "EXPENSE"]),
 });
 
-export const categoryUpdateSchema = z.object({
-    name: z.string().min(1, "Name is required").optional(),
-    type: z.enum(["INCOME", "EXPENSE"]).optional(),
-});
+export const categoryUpdateSchema = categorySchema.partial().refine(
+    (data) => Object.keys(data).length > 0,
+    { message: "At least one field must be provided for update" }
+);
