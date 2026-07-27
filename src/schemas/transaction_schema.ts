@@ -4,7 +4,7 @@ export const transactionSchema = z.object({
     amount: z.number().min(0.01, "Amount must be greater than 0"),
     description: z.string().max(255, "Description must be at most 255 characters").optional(),
     type: z.enum(["INCOME", "EXPENSE"]),
-    date: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    date: z.coerce.date().refine((date) => !isNaN(date.getTime()), {
         message: "Invalid date format",
     }),
     accountId: z.uuid("Invalid account ID"),
