@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { transactionService } from "../services/transaction_service.js";
+import { transactionSchema, transactionUpdateSchema } from "../schemas/transaction_schema.js";
 
 interface TransactionParams {
     id: string;
@@ -9,9 +10,10 @@ class TransactionController {
     async create(req: Request, res: Response) {
         try {
             const userId = req.user!.id;
+            const validated = transactionSchema.parse(req.body);
 
             const transaction = await transactionService.create(
-                req.body,
+                validated,
                 userId
             );
 
@@ -77,11 +79,12 @@ class TransactionController {
         try {
             const id = req.params.id as string;
             const userId = req.user!.id;
+            const validated = transactionUpdateSchema.parse(req.body);
 
             const transaction = await transactionService.update(
                 id,
                 userId,
-                req.body
+                validated
             );
 
             return res.status(200).json(transaction);
