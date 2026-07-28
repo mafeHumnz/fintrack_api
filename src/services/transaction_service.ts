@@ -1,11 +1,12 @@
 import {transactionRepository} from '../repositories/transaction_repository.js';
 import {accountRepository} from '../repositories/account_repository.js';
 import {categoryRepository} from '../repositories/category_repository.js';
+import {TransactionType} from '@prisma/client';
 
 interface CreateTransactionData {
     amount: number;
     description?: string;
-    type: 'INCOME' | 'EXPENSE';
+    type: TransactionType;
     date: Date;
     accountId: string;
     categoryId: string;
@@ -14,7 +15,7 @@ interface CreateTransactionData {
 interface UpdateTransactionData {
     amount?: number;
     description?: string;
-    type?: 'INCOME' | 'EXPENSE';
+    type?: TransactionType;
     date?: Date;
     accountId?: string;
     categoryId?: string;

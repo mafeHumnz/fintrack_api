@@ -11,6 +11,22 @@ datasource db {
   provider = "postgresql"
 }
 
+enum AccountType {
+  CASH
+  BANK_ACCOUNT
+  CREDIT_CARD
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
 // Define your database models here
 
 model User {
@@ -31,7 +47,7 @@ model Account {
   name         String
   balance      Float         @default(0)
   currency     String        @default("COP")
-  type         String        @default("Cash")
+  type         AccountType   @default(CASH)
   userId       String
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
@@ -42,7 +58,7 @@ model Account {
 model Category {
   id           String        @id @default(uuid())
   name         String
-  type         String        @default("Expense")
+  type         CategoryType  @default(EXPENSE)
   userId       String
   user         User          @relation(fields: [userId], references: [id])
   transactions Transaction[]
@@ -82,7 +98,7 @@ model Transaction {
   id          String    @id @default(uuid())
   amount      Float
   description String?
-  type        String    @default("Expense")
+  type        TransactionType  @default(EXPENSE)
   date        DateTime  @default(now())
   accountId   String
   account     Account   @relation(fields: [accountId], references: [id])

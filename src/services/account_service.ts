@@ -1,17 +1,18 @@
-import { accountRepository } from "../repositories/account_repository.js";
+import { accountRepository } from "../repositories/account_repository.js"; 
+import {AccountType} from "@prisma/client";
 
 interface CreateAccountData {
     name: string;
     balance: number;
     currency: string;
-    type: "CASH" | "BANK_ACCOUNT" | "CREDIT_CARD";
+    type: AccountType;
 }
 
 interface UpdateAccountData {
     name?: string;
     balance?: number;
     currency?: string;
-    type?: "CASH" | "BANK_ACCOUNT" | "CREDIT_CARD";
+    type?: AccountType;
 }
 
 class AccountService {

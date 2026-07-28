@@ -1,13 +1,14 @@
 import {categoryRepository} from "../repositories/category_repository.js";
+import {CategoryType} from "@prisma/client";
 
 interface CreateCategoryData {
     name: string;
-    type: "INCOME" | "EXPENSE";
+    type: CategoryType;
 }
 
 interface UpdateCategoryData {
     name?: string;
-    type?: "INCOME" | "EXPENSE";
+    type?: CategoryType;
 }
 
 class CategoryService {
