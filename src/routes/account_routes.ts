@@ -8,6 +8,7 @@ const router = Router();
 
 router.post("/", authenticateToken, validateSchema(accountSchema), accountController.create);
 router.get("/", authenticateToken, accountController.findAll);
+router.get("/summary", authenticateToken, accountController.getSummary);
 router.get("/:id", authenticateToken, accountController.findById);
 router.patch("/:id", authenticateToken, validateSchema(accountUpdateSchema), accountController.update);
 router.delete("/:id", authenticateToken, accountController.delete);
