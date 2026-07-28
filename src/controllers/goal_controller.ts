@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import {goalService} from "../services/goal_service.js";
+import {goalSchema, updateGoalSchema} from "../schemas/goal_schema.js";
 
 interface GoalParams {
     id: string;
@@ -9,9 +10,10 @@ class GoalController {
     async create(req: Request, res: Response) {
         try {
             const userId = req.user!.id;
+            const validated = goalSchema.parse(req.body);
 
             const goal = await goalService.create(
-                req.body,
+                validated,
                 userId
             );
 
@@ -72,10 +74,11 @@ class GoalController {
     async update(req: Request, res: Response) {
         try {
             const id = req.params.id as string;
+            const validated = updateGoalSchema.parse(req.body);
 
             const updatedGoal = await goalService.update(
                 id,
-                req.body
+                validated
             );
 
             return res.status(200).json(updatedGoal);

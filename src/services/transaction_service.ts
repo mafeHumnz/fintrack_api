@@ -5,7 +5,7 @@ import {categoryRepository} from '../repositories/category_repository.js';
 interface CreateTransactionData {
     amount: number;
     description?: string;
-    type: 'income' | 'expense';
+    type: 'INCOME' | 'EXPENSE';
     date: Date;
     accountId: string;
     categoryId: string;
@@ -14,7 +14,7 @@ interface CreateTransactionData {
 interface UpdateTransactionData {
     amount?: number;
     description?: string;
-    type?: 'income' | 'expense';
+    type?: 'INCOME' | 'EXPENSE';
     date?: Date;
     accountId?: string;
     categoryId?: string;
