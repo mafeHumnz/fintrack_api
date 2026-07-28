@@ -46,6 +46,7 @@ model Account {
   id           String        @id @default(uuid())
   name         String
   balance      Float         @default(0)
+  creditLimit  Float?         @default(0)
   currency     String        @default("COP")
   type         AccountType   @default(CASH)
   userId       String

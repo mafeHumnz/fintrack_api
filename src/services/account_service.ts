@@ -105,6 +105,23 @@ class AccountService {
 
         return accountRepository.delete(id);
     }
+
+    async getSummary(userId: string) {
+        
+        const accounts = await accountRepository.findAllByUserId(userId);
+
+        const netWorth = accounts.reduce((total, account) => {
+            if (account.type === "CREDIT_CARD") {
+                return total - account.balance;
+            }
+            return total + account.balance;
+        }, 0);
+
+        return {
+            netWorth,
+            accounts,
+        };
+    }
 }
 
 export const accountService =

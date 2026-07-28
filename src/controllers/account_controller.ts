@@ -123,6 +123,28 @@ class AccountController {
             });
         }
     }
+
+    async getSummary(req: Request, res: Response) {
+        try {
+            const userId = req.user!.id;
+
+            const summary = await accountService.getSummary(
+                userId
+            );
+
+            return res.status(200).json(summary);
+        } catch (error) {
+            if (error instanceof Error) {
+                return res.status(400).json({
+                    message: error.message,
+                });
+            }
+
+            return res.status(500).json({
+                message: "Internal server error",
+            });
+        }
+    }
 }
 
 export const accountController = new AccountController();
