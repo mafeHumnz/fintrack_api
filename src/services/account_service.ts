@@ -107,7 +107,6 @@ class AccountService {
     }
 
     async getSummary(userId: string) {
-        
         const accounts = await accountRepository.findAllByUserId(userId);
 
         const netWorth = accounts.reduce((total, account) => {
@@ -117,10 +116,19 @@ class AccountService {
             return total + account.balance;
         }, 0);
 
-        return {
-            netWorth,
-            accounts,
-        };
+        const accountsWithCreditInfo = accounts.map((account) => {
+            if (account.type !== "CREDIT_CARD") {
+                return account;
+            }
+
+            return {
+                ...account,
+                availableCredit: account.creditLimit! - account.balance,
+                creditUsage: (account.balance / account.creditLimit!) * 100,
+            };
+        });
+
+        return { netWorth, accounts: accountsWithCreditInfo };
     }
 }
 
