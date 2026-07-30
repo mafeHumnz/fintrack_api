@@ -65,13 +65,34 @@ class TransactionService {
         });
     }
 
-    return transactionRepository.create({
-        amount: data.amount,
-        description: data.description,
-        type: data.type,
-        date: data.date,
-        account: { connect: { id: data.accountId } },
-        category: { connect: { id: data.categoryId } },
+    const newBalance = data.type === "EXPENSE"
+        ? account.balance + data.amount
+        : account.balance - data.amount;
+
+    if(data.type === "EXPENSE" && newBalance > account.creditLimit!) {
+        throw new Error("Credit limit exceeded");
+    }
+
+    if(data.type === "INCOME" && newBalance < 0) {
+        throw new Error("Payment exceeds current debt");
+    }
+
+    return prisma.$transaction(async (tx) => {
+        await tx.account.update({
+            where: { id: account.id },
+            data: { balance: newBalance },
+        });
+
+        return tx.transaction.create({
+            data: {
+                amount: data.amount,
+                description: data.description,
+                type: data.type,
+                date: data.date,
+                account: { connect: { id: data.accountId } },
+                category: { connect: { id: data.categoryId } },
+            },
+        });
     });
 }
     
