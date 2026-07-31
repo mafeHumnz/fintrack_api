@@ -25,27 +25,21 @@ interface UpdateTransactionData {
 
 class TransactionService {
     async create(data: CreateTransactionData, userId: string) {
-    const [account, category] = await Promise.all([
-        accountRepository.findById(data.accountId),
-        categoryRepository.findById(data.categoryId),
-    ]);
+        const [account, category] = await Promise.all([
+            accountRepository.findById(data.accountId),
+            categoryRepository.findById(data.categoryId),
+        ]);
 
-    if (!account || account.userId !== userId) {
-        throw new Error("Account not found or does not belong to the user");
-    }
-
-    if (!category || category.userId !== userId) {
-        throw new Error("Category not found or does not belong to the user");
-    }
-
-    if (account.type !== "CREDIT_CARD") {
-        if (data.type === "EXPENSE" && account.balance < data.amount) {
-            throw new Error("Insufficient balance");
+        if (!account || account.userId !== userId) {
+            throw new Error("Account not found or does not belong to the user");
         }
 
-        const newBalance = data.type === "EXPENSE"
-            ? account.balance - data.amount
-            : account.balance + data.amount;
+        if (!category || category.userId !== userId) {
+            throw new Error("Category not found or does not belong to the user");
+        }
+
+        const newBalance = this.applyAccountBalance(account, data.type, data.amount);
+        this.validateBalance(account, newBalance);
 
         return prisma.$transaction(async (tx) => {
             await tx.account.update({
@@ -64,37 +58,6 @@ class TransactionService {
                 },
             });
         });
-    }
-
-    const newBalance = data.type === "EXPENSE"
-        ? account.balance + data.amount
-        : account.balance - data.amount;
-
-    if(data.type === "EXPENSE" && newBalance > account.creditLimit!) {
-        throw new Error("Credit limit exceeded");
-    }
-
-    if(data.type === "INCOME" && newBalance < 0) {
-        throw new Error("Payment exceeds current debt");
-    }
-
-    return prisma.$transaction(async (tx) => {
-        await tx.account.update({
-            where: { id: account.id },
-            data: { balance: newBalance },
-        });
-
-        return tx.transaction.create({
-            data: {
-                amount: data.amount,
-                description: data.description,
-                type: data.type,
-                date: data.date,
-                account: { connect: { id: data.accountId } },
-                category: { connect: { id: data.categoryId } },
-            },
-        });
-    });
 }
     
     async findAll(userId: string) {
