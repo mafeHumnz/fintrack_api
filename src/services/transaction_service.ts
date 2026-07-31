@@ -3,6 +3,7 @@ import {accountRepository} from '../repositories/account_repository.js';
 import {categoryRepository} from '../repositories/category_repository.js';
 import {TransactionType} from '@prisma/client';
 import {prisma} from '../config/prisma.js';
+import {Account, Transaction} from '@prisma/client';
 
 interface CreateTransactionData {
     amount: number;
@@ -183,7 +184,36 @@ class TransactionService {
         return transactionRepository.delete(
             id
         );
-    }   
+    }
+    
+private reverseAccountBalance(account: Account, transaction: Transaction): number {
+    const isCredit = account.type === "CREDIT_CARD";
+    if (transaction.type === "EXPENSE") {
+        return isCredit ? account.balance - transaction.amount : account.balance + transaction.amount;
+    }
+    return isCredit ? account.balance + transaction.amount : account.balance - transaction.amount;
+}
+
+private applyAccountBalance(account: Account, type: "EXPENSE" | "INCOME", amount: number): number {
+    const isCredit = account.type === "CREDIT_CARD";
+    if (type === "EXPENSE") {
+        return isCredit ? account.balance + amount : account.balance - amount;
+    }
+    return isCredit ? account.balance - amount : account.balance + amount;
+}
+
+private validateBalance(account: Account, newBalance: number) {
+    if (account.type === "CREDIT_CARD") {
+        if (newBalance > account.creditLimit!) {
+            throw new Error("Credit limit exceeded");
+        }
+        if (newBalance < 0) {
+            throw new Error("Payment exceeds current debt");
+        }
+    } else if (newBalance < 0) {
+        throw new Error("Insufficient balance");
+    }
+}
 }
 
 export const transactionService = new TransactionService();
