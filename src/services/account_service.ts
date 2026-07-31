@@ -1,5 +1,6 @@
 import { accountRepository } from "../repositories/account_repository.js"; 
 import {AccountType} from "@prisma/client";
+import {Prisma} from "@prisma/client";
 
 interface CreateAccountData {
     name: string;
@@ -16,36 +17,19 @@ interface UpdateAccountData {
 }
 
 class AccountService {
-    async create(
-        data: CreateAccountData,
-        userId: string
-    ) {
-
-        const existingAccount =
-            await accountRepository.findAllByUserId(
-                userId
-            );
-
-        const accountExists =
-            existingAccount.some(
-                account =>
-                    account.name.toLowerCase() ===
-                    data.name.toLowerCase()
-            );
-
-        if (accountExists) {
-            throw new Error(
-                "Account with this name already exists"
-            );
-        }
-
-        return accountRepository.create({
+    async create(data: CreateAccountData, userId: string) {
+    try {
+        return await accountRepository.create({
             ...data,
-            user: {
-                connect: { id: userId },
-            },
+            user: { connect: { id: userId } },
         });
+    } catch (error) {
+        if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+            throw new Error("Account with this name already exists");
+        }
+        throw error;
     }
+}
 
     async findAll(userId: string) {
         return accountRepository.findAllByUserId(
