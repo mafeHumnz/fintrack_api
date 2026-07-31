@@ -54,6 +54,10 @@ model Account {
   transactions Transaction[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+
+  // Nota: existe un índice único funcional case-insensitive sobre (userId, LOWER(name))
+  // creado manualmente en la migración add_case_insensitive_unique_account_name.
+  // No representable de forma nativa en Prisma schema.
 }
 
 model Category {
