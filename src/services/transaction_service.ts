@@ -135,18 +135,25 @@ class TransactionService {
         );
     }
     
-    async delete(
-        id: string,
-        userId: string
-    ) {
-        await this.findById(
-            id,
-            userId
-        );
+    async delete(id: string, userId: string) {
+        const transaction = await this.findById(id, userId);
+        const account = await accountRepository.findById(transaction.accountId);
 
-        return transactionRepository.delete(
-            id
-        );
+        if (!account) {
+            throw new Error("Account not found");
+        }
+
+        const reversedBalance = this.reverseAccountBalance(account, transaction);
+        this.validateBalance(account, reversedBalance);
+
+        return prisma.$transaction(async (tx) => {
+            await tx.account.update({
+                where: { id: account.id },
+                data: { balance: reversedBalance },
+            });
+
+            return tx.transaction.delete({ where: { id } });
+        });
     }
     
 private reverseAccountBalance(account: Account, transaction: Transaction): number {
