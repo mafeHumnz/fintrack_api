@@ -95,45 +95,75 @@ class TransactionService {
         return transaction;
     }
     
-    async update(
-        id: string,
-        userId: string,
-        data: UpdateTransactionData
-    ) {
-        const transaction = await this.findById(
-            id,
-            userId
-        );
+    async update(id: string, userId: string, data: UpdateTransactionData) {
+        const transaction = await this.findById(id, userId);
 
-        if (data.accountId) {
-            const account = await accountRepository.findById(
-                data.accountId
-            );
+        const [oldAccount, newAccount, category] = await Promise.all([
+            accountRepository.findById(transaction.accountId),
+            data.accountId ? accountRepository.findById(data.accountId) : Promise.resolve(null),
+            data.categoryId ? categoryRepository.findById(data.categoryId) : Promise.resolve(null),
+        ]);
 
-            if (!account || account.userId !== userId) {
-                throw new Error(
-                    'Account not found or does not belong to the user'
-                );
-            }
+        if (!oldAccount) {
+            throw new Error("Account not found");
         }
 
-        if (data.categoryId) {
-            const category = await categoryRepository.findById(
-                data.categoryId
-            );
-
-            if (!category || category.userId !== userId) {
-                throw new Error(
-                    'Category not found or does not belong to the user'
-                );
-            }
+        if (data.accountId && (!newAccount || newAccount.userId !== userId)) {
+            throw new Error("Account not found or does not belong to the user");
         }
 
-        return transactionRepository.update(
-            id,
-            data
-        );
-    }
+        if (data.categoryId && (!category || category.userId !== userId)) {
+            throw new Error("Category not found or does not belong to the user");
+        }
+
+        const newType = data.type ?? transaction.type;
+        const newAmount = data.amount ?? transaction.amount;
+        const accountChanged = Boolean(data.accountId && data.accountId !== transaction.accountId);
+        const targetAccount = accountChanged ? newAccount! : oldAccount;
+
+        let oldAccountFinalBalance: number | null = null;
+        let targetAccountFinalBalance: number;
+
+        if (accountChanged) {
+            oldAccountFinalBalance = this.reverseAccountBalance(oldAccount, transaction);
+            this.validateBalance(oldAccount, oldAccountFinalBalance);
+
+            targetAccountFinalBalance = this.applyAccountBalance(targetAccount, newType, newAmount);
+            this.validateBalance(targetAccount, targetAccountFinalBalance);
+        } else {
+            const reversedBalance = this.reverseAccountBalance(oldAccount, transaction);
+            const accountAfterReversal = { ...oldAccount, balance: reversedBalance };
+
+            targetAccountFinalBalance = this.applyAccountBalance(accountAfterReversal, newType, newAmount);
+            this.validateBalance(accountAfterReversal, targetAccountFinalBalance);
+        }
+
+        return prisma.$transaction(async (tx) => {
+            if (accountChanged && oldAccountFinalBalance !== null) {
+                await tx.account.update({
+                    where: { id: oldAccount.id },
+                    data: { balance: oldAccountFinalBalance },
+                });
+            }
+
+            await tx.account.update({
+                where: { id: targetAccount.id },
+                data: { balance: targetAccountFinalBalance },
+            });
+
+            return tx.transaction.update({
+                where: { id },
+                data: {
+                    amount: data.amount,
+                    description: data.description,
+                    type: data.type,
+                    date: data.date,
+                    account: data.accountId ? { connect: { id: data.accountId } } : undefined,
+                    category: data.categoryId ? { connect: { id: data.categoryId } } : undefined,
+                },
+            });
+        });
+}
     
     async delete(id: string, userId: string) {
         const transaction = await this.findById(id, userId);

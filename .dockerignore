@@ -8,6 +8,7 @@ yarn-error.log
 
 # Env / secrets
 .env
+.env.test
 #.env.*
 !.env.example
 
