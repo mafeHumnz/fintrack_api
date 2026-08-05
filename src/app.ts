@@ -1,5 +1,6 @@
 import express from "express";
 import helmet from "helmet";
+import {globalLimiter} from "./middlewares/rate_limiters.js";
 import authRoutes from "./routes/auth_routes.js";
 import accountRoutes from "./routes/account_routes.js";
 import categoryRoutes from "./routes/category_routes.js";
@@ -9,8 +10,9 @@ import goalRoutes from "./routes/goal_routes.js";
 
 const app = express();
 
-app.use(express.json());
 app.use(helmet());
+app.use(globalLimiter);
+app.use(express.json());
 
 app.use("/auth", authRoutes);
 app.use("/accounts", accountRoutes);

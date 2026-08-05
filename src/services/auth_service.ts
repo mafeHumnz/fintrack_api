@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import {prisma} from "../config/prisma.js";
 import {generateToken} from "../utils/generateToken.js";
-import {env} from "../config/env.js";
 
 interface RegisterData{
     name: string;
