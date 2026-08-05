@@ -24,8 +24,7 @@ const parsedEnv = envSchema.safeParse(
 );
 
 if (!parsedEnv.success) {
-  console.error(parsedEnv.error.format());
-
+  z.treeifyError(parsedEnv.error);
   throw new Error(
     "Variables de entorno inválidas"
   );

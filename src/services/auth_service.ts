@@ -1,7 +1,6 @@
 import bcrypt from "bcrypt";
 import {prisma} from "../config/prisma.js";
 import {generateToken} from "../utils/generateToken.js";
-import {env} from "../config/env.js";
 
 interface RegisterData{
     name: string;
@@ -52,14 +51,12 @@ class AuthService {
             where: {email},
         });
 
-        if (!user) {
-            throw new Error("Invalid email or password");
-        }
+        const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8/pqhITz.YkC.4YjqTsLoQ9C1Kev.6";
 
         // Compare the provided password with the hashed password
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
 
-        if (!isPasswordValid) {
+        if (!user ||!isPasswordValid) {
             throw new Error("Invalid email or password");
         }
 
