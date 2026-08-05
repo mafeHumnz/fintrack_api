@@ -54,7 +54,7 @@ class AuthService {
         const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8/pqhITz.YkC.4YjqTsLoQ9C1Kev.6";
 
         // Compare the provided password with the hashed password
-        const isPasswordValid = await bcrypt.compare(password, user?.password || DUMMY_HASH);
+        const isPasswordValid = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
 
         if (!user ||!isPasswordValid) {
             throw new Error("Invalid email or password");
