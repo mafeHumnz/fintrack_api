@@ -1,4 +1,5 @@
 import express from "express";
+import helmet from "helmet";
 import authRoutes from "./routes/auth_routes.js";
 import accountRoutes from "./routes/account_routes.js";
 import categoryRoutes from "./routes/category_routes.js";
@@ -9,6 +10,7 @@ import goalRoutes from "./routes/goal_routes.js";
 const app = express();
 
 app.use(express.json());
+app.use(helmet());
 
 app.use("/auth", authRoutes);
 app.use("/accounts", accountRoutes);
