@@ -1,9 +1,9 @@
 import request from "supertest";
 import { randomUUID } from "crypto";
 import { AccountType, CategoryType, TransactionType } from "@prisma/client";
-import { prisma } from "../../src/config/prisma.js";
-import app from "../../src/app.js";
-import { generateToken } from "../../src/utils/generateToken.js";
+import { prisma } from "../../../src/config/prisma.js";
+import app from "../../../src/app.js";
+import { generateToken } from "../../../src/utils/generateToken.js";
 
 describe("PATCH /transactions/:id integration tests", () => {
   let userId: string;
