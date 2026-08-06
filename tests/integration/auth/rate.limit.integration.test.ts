@@ -1,8 +1,8 @@
 import request from "supertest";
 import bcrypt from "bcrypt";
 import { jest } from "@jest/globals";
-import { prisma } from "../../src/config/prisma.js";
-import app from "../../src/app.js";
+import { prisma } from "../../../src/config/prisma.js";
+import app from "../../../src/app.js";
 
 describe("Auth integration tests", () => {
   const baseUrl = "/auth";
@@ -327,7 +327,7 @@ describe("Auth integration tests", () => {
       jest.resetModules();
       process.env.NODE_ENV = "production"; // temporarily bypass the test override in rate_limiters.ts
 
-      const { default: freshApp } = await import("../../src/app.js");
+      const { default: freshApp } = await import("../../../src/app.js");
 
       await request(freshApp).post(`${baseUrl}/register`).send({
         name: "Rate Limited User",
