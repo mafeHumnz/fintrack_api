@@ -12,6 +12,7 @@ interface CreateAccountData {
 interface UpdateAccountData {
     name?: string;
     balance?: number;
+    creditLimit?: number;
     currency?: string;
     type?: AccountType;
 }
@@ -60,21 +61,24 @@ class AccountService {
         return account;
     }
 
-    async update(
-        id: string,
-        userId: string,
-        data: UpdateAccountData
-    ) {
+    async update(id: string, userId: string, data: UpdateAccountData) {
+        const account = await this.findById(id, userId);
 
-        await this.findById(
-            id,
-            userId
-        );
+        const resultingType = data.type ?? account.type;
+        const resultingCreditLimit = data.creditLimit ?? account.creditLimit;
 
-        return accountRepository.update(
-            id,
-            data
-        );
+        if (resultingType === "CREDIT_CARD" && resultingCreditLimit === null) {
+            throw new Error("Credit limit is required for credit card accounts");
+        }
+
+        try {
+            return await accountRepository.update(id, data);
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+                throw new Error("Account with this name already exists");
+            }
+            throw error;
+        }
     }
 
     async delete(
