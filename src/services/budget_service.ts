@@ -101,11 +101,7 @@ class BudgetService {
         };
     }
 
-    async update(
-        id: string,
-        data: UpdateBudgetData,
-        userId: string
-    ) {
+    async update(id: string, data: UpdateBudgetData, userId: string) {
         const budget = await budgetRepository.findById(id);
 
         if (!budget || budget.userId !== userId) {
@@ -116,10 +112,23 @@ class BudgetService {
             const category = await categoryRepository.findById(data.categoryId);
 
             if (!category || category.userId !== userId) {
-                throw new Error(
-                    "Category not found or does not belong to the user"
-                );
+                throw new Error("Category not found or does not belong to the user");
             }
+        }
+
+        const resultingCategoryId = data.categoryId ?? budget.categoryId;
+        const resultingMonth = data.month ?? budget.month;
+        const resultingYear = data.year ?? budget.year;
+
+        const duplicate = await budgetRepository.findbyCategoryAndPeriod(
+            userId,
+            resultingCategoryId,
+            resultingMonth,
+            resultingYear
+        );
+
+        if (duplicate && duplicate.id !== id) {
+            throw new Error("A budget already exists for this category and period");
         }
 
         return budgetRepository.update(id, data);
