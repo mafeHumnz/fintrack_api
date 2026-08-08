@@ -1,6 +1,7 @@
 import { accountRepository } from "../repositories/account_repository.js"; 
 import {AccountType} from "@prisma/client";
 import {Prisma} from "@prisma/client";
+import { prisma } from "../config/prisma.js";
 
 interface CreateAccountData {
     name: string;
@@ -81,15 +82,14 @@ class AccountService {
         }
     }
 
-    async delete(
-        id: string,
-        userId: string
-    ) {
+    async delete(id: string, userId: string) {
+        await this.findById(id, userId);
 
-        await this.findById(
-            id,
-            userId
-        );
+        const transactionCount = await prisma.transaction.count({ where: { accountId: id } });
+
+        if (transactionCount > 0) {
+            throw new Error("Cannot delete account with existing transactions");
+        }
 
         return accountRepository.delete(id);
     }
