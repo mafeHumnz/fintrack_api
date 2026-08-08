@@ -44,6 +44,7 @@ class BudgetRepository {
     findbyCategoryAndPeriod(userId: string, categoryId: string, month: number, year: number) {
         return prisma.budget.findFirst({
             where: {
+                userId,
                 categoryId,
                 month,
                 year,
