@@ -105,7 +105,9 @@ class BudgetController {
 
             await budgetService.delete(id, userId);
 
-            return res.status(204).send();
+            return res.status(200).json({
+                message: 'Budget deleted successfully',
+            });
         } catch (error) {
             if (error instanceof Error) {
                 return res.status(400).json({
