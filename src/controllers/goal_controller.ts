@@ -54,8 +54,9 @@ class GoalController {
     async findById(req: Request, res: Response) {
         try {
             const id = req.params.id as string;
+            const userId = req.user!.id;
 
-            const goal = await goalService.findById(id);
+            const goal = await goalService.findById(id, userId);
 
             return res.status(200).json(goal);
         } catch (error) {
@@ -74,10 +75,12 @@ class GoalController {
     async update(req: Request, res: Response) {
         try {
             const id = req.params.id as string;
+            const userId = req.user!.id;
             const validated = updateGoalSchema.parse(req.body);
 
             const updatedGoal = await goalService.update(
                 id,
+                userId,
                 validated
             );
 
@@ -98,8 +101,9 @@ class GoalController {
     async delete(req: Request, res: Response) {
         try {
             const id = req.params.id as string;
+            const userId = req.user!.id;
 
-            await goalService.delete(id);
+            await goalService.delete(id, userId);
 
             return res.status(200).json({
                 message: "Goal deleted successfully",
