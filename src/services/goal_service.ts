@@ -47,6 +47,12 @@ class GoalService {
         if (!goal || goal.userId !== userId) {
             throw new Error("Goal not found or does not belong to the user");
         }
+        const resultingCurrentAmount = data.currentAmount ?? goal.currentAmount;
+        const resultingTargetAmount = data.targetAmount ?? goal.targetAmount;
+
+        if (resultingCurrentAmount > resultingTargetAmount) {
+            throw new Error("Current amount cannot exceed target amount");
+        }
 
         return goalRepository.update(id, data);
     }
