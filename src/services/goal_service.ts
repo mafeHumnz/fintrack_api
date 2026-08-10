@@ -33,19 +33,31 @@ class GoalService {
         return goals.map((goal) => this.buildGoalSummary(goal));
     }
 
-    async findById(id: string) {
+    async findById(id: string, userId: string) {
         const goal = await goalRepository.findById(id);
-        if (!goal) {
-            throw new Error("Goal not found");
+        if (!goal || goal.userId !== userId) {
+            throw new Error("Goal not found or does not belong to the user");
         }
         return this.buildGoalSummary(goal);
     }
 
-    async update(id: string, data: UpdateGoalData) {
+    async update(id: string, userId: string, data: UpdateGoalData) {
+        const goal = await goalRepository.findById(id);
+
+        if (!goal || goal.userId !== userId) {
+            throw new Error("Goal not found or does not belong to the user");
+        }
+
         return goalRepository.update(id, data);
     }
 
-    async delete(id: string) {
+    async delete(id: string, userId: string) {
+        const goal = await goalRepository.findById(id);
+
+        if (!goal || goal.userId !== userId) {
+            throw new Error("Goal not found or does not belong to the user");
+        }
+
         return goalRepository.delete(id);
     }
 
