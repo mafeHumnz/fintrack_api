@@ -40,6 +40,11 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: 3000
 
       - name: Run database migrations
         run: npx prisma migrate deploy
@@ -52,7 +57,7 @@ jobs:
       - name: Run tests
         run: npm test
         env:
-          DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
           NODE_ENV: test
+          DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           PORT: 3000
