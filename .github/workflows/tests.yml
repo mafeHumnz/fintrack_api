@@ -44,7 +44,10 @@ jobs:
       - name: Run database migrations
         run: npx prisma migrate deploy
         env:
+          NODE_ENV: test
           DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: 3000
 
       - name: Run tests
         run: npm test
@@ -52,3 +55,4 @@ jobs:
           DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
           NODE_ENV: test
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          PORT: 3000
