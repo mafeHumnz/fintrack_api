@@ -1,173 +1,196 @@
 # FinTrack API
 
-![Tests](https://github.com/mafeHumnz/fintrack_api/actions/workflows/tests.yml/badge.svg)
+Personal finance management API built with Node.js, Express, TypeScript, Prisma, PostgreSQL and Docker.
 
-FinTrack API is a RESTful backend for personal finance management. It provides JWT-based authentication and CRUD operations for accounts, transactions, categories, budgets and savings goals, with business rules for balance synchronization and budget tracking.
+## Overview
+
+FinTrack API is a backend application designed to help users manage their personal finances. The system allows users to track income, expenses, accounts, categories, budgets and financial transactions in a structured way.
+
+This project is being developed in phases following a professional backend workflow and architecture.
+
+---
+
+## Features
+
+Current:
+
+* Authentication with JWT
+* Environment configuration for development and production
+* PostgreSQL database integration
+* Prisma ORM setup
+* Docker support
+* Input validation
+* Swagger API documentation
+
+Planned:
+
+* User management
+* Financial accounts
+* Transactions
+* Categories
+* Budgets
+* Financial reports
+* Stored procedures
+* Analytics
+
+---
 
 ## Tech Stack
 
-- **Runtime:** Node.js, `ts-node`/`tsx`
-- **Framework:** Express
-- **Language:** TypeScript
-- **Database:** PostgreSQL (via Prisma)
-- **Validation:** Zod
-- **Auth / Security:** JSON Web Tokens (jsonwebtoken), `bcrypt` for password hashing, `helmet` for secure headers
-- **Rate limiting:** express-rate-limit
-- **Testing:** Jest, Supertest
-- **Docs:** swagger-jsdoc, swagger-ui-express
+Backend:
 
-## Key Features
+* Node.js
+* Express
+* TypeScript
 
-- Authentication with JWT (`/auth/register`, `/auth/login`).
-- Account management with support for `CREDIT_CARD` accounts and `creditLimit`.
-- Transactions that automatically update account balances (create, update and delete adjust balances inside a DB transaction).
-- Budget per category and period with spent/remaining calculations.
-- Savings goals with progress, remaining amount and days remaining calculations.
-- Input validation using Zod schemas.
-- Global and endpoint-specific rate limiting (login/register limits).
-- Secure HTTP headers via Helmet.
-- Timing-attack mitigation in login using a constant dummy bcrypt hash.
+Database:
 
-## Environment variables
+* PostgreSQL
+* Prisma ORM
 
-The application validates these environment variables in `src/config/env.ts` — set them in your `.env.*` file (do not commit secrets):
+Infrastructure:
 
-- `NODE_ENV` (development | production | test)
-- `PORT`
-- `DATABASE_URL`
-- `JWT_SECRET`
+* Docker
+* Docker Compose
 
-## Quickstart (local)
+Authentication:
 
-Clone the repo:
+* JWT
+* bcrypt
+
+Validation:
+
+* Zod
+* express-validator
+
+Documentation:
+
+* Swagger
+
+---
+
+## Project Structure
+
+```text
+fintrack_api/
+
+├── src/
+│   ├── config/
+│   ├── controllers/
+│   ├── routes/
+│   ├── services/
+│   ├── middlewares/
+│   └── server.ts
+│
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+│
+├── docs/
+│
+├── .env.example
+├── docker-compose.yml
+├── tsconfig.json
+├── prisma.config.ts
+└── package.json
+```
+
+## Environment Variables
+
+Create:
+
+```env
+.env.development
+```
+
+Example:
+
+```env
+NODE_ENV=development
+
+PORT=3000
+
+DATABASE_URL=postgresql://postgres:password@localhost:5433/fintrack_dev
+
+JWT_SECRET=your_secret_key
+```
+
+---
+
+## Installation
+
+Clone repository:
 
 ```bash
 git clone https://github.com/mafeHumnz/fintrack_api.git
 cd fintrack_api
 ```
 
-Install dependencies:
+2. Install dependencies
 
 ```bash
 npm install
 ```
 
-Start the database (Docker Compose):
+Start PostgreSQL container:
 
 ```bash
 docker compose up -d
 ```
 
-Generate Prisma client and run migrations:
+Generate Prisma client:
 
 ```bash
-npm run prisma:generate
-npm run prisma:migrate
+npx prisma generate
 ```
 
-Run the development server:
+Run migrations:
+
+```bash
+npx prisma migrate dev
+```
+
+Run development server:
+
+```bash
+npx prisma migrate deploy
+```
+
+---
+
+## Available Scripts
 
 ```bash
 npm run dev
+npm run build
+npm start
+
+npm run prisma:generate
+npm run prisma:migrate
+npm run prisma:studio
 ```
-
-## Running tests
-
-Run the test suite with the project script:
-
-```bash
-npm test
-```
-
-## API Endpoints
-
-All routes (except `/auth`) require a Bearer JWT token.
-
-**Auth**
-
-| Method | Path | Description |
-|---|---:|---|
-| POST | /auth/register | Create a new user (validates and hashes password) |
-| POST | /auth/login | Authenticate user and return JWT (mitigates timing attacks) |
-
-**Accounts**
-
-| Method | Path | Description |
-|---|---:|---|
-| POST | /accounts | Create account (supports `creditLimit` for credit cards) |
-| GET | /accounts | List user's accounts |
-| GET | /accounts/summary | Net worth and per-account credit info (`availableCredit`, `creditUsage`) |
-| GET | /accounts/:id | Get account by id |
-| PATCH | /accounts/:id | Update account (type/creditLimit validations) |
-| DELETE | /accounts/:id | Delete account (prevents deletion when transactions exist) |
-
-**Transactions**
-
-| Method | Path | Description |
-|---|---:|---|
-| POST | /transactions | Create transaction — updates account balance in a DB transaction and validates credit/insufficient funds |
-| GET | /transactions | List user's transactions |
-| GET | /transactions/:id | Get transaction by id |
-| PATCH | /transactions/:id | Update transaction — handles moving between accounts and balance reconciliation |
-| DELETE | /transactions/:id | Delete transaction — reverses its effect on the account balance |
-
-**Categories**
-
-| Method | Path | Description |
-|---|---:|---|
-| POST | /categories | Create a category |
-| GET | /categories | List categories |
-| GET | /categories/:id | Get category by id |
-| PATCH | /categories/:id | Update category |
-| DELETE | /categories/:id | Delete category |
-
-**Budgets**
-
-| Method | Path | Description |
-|---|---:|---|
-| POST | /budgets | Create budget (one per category+period enforced) |
-| GET | /budgets | List budgets with `spent` and `remaining` calculations |
-| GET | /budgets/:id | Get budget with `spent` and `remaining` |
-| PATCH | /budgets/:id | Update budget (validates duplicates by category+period) |
-| DELETE | /budgets/:id | Delete budget |
-
-**Goals (Savings)**
-
-| Method | Path | Description |
-|---|---:|---|
-| POST | /goals | Create a savings goal |
-| GET | /goals | List goals (includes `progress`, `remaining`, `daysRemaining`) |
-| GET | /goals/:id | Get goal summary by id |
-| PATCH | /goals/:id | Update goal (validates target/current amounts) |
-| DELETE | /goals/:id | Delete goal |
-
-## Project structure (src)
-
-- `src/config/` — environment and Prisma client configuration
-- `src/routes/` — Express route definitions (one file per resource)
-- `src/controllers/` — HTTP handlers that call services and handle responses
-- `src/services/` — Business logic (accounts, transactions, budgets, goals) and transactional operations
-- `src/repositories/` — Data access wrappers around Prisma client
-- `src/schemas/` — Zod validation schemas for request payloads
-- `src/middlewares/` — Auth (`authenticateToken`), validation (`validateSchema`), and rate limiters
-- `src/utils/` — small helpers (e.g., token generation)
-- `src/generated/` — Prisma generated client types
-- `src/types/` — Custom typing to attach authenticated user data to requests (req.user) in Express.
-
-## Security
-
-- Secure headers: `helmet()` is enabled in `src/app.ts`.
-- Rate limiting: global limiter plus login/register-specific limiters are implemented in `src/middlewares/rate_limiters.ts`.
-- Input validation: request bodies are validated with Zod (`src/schemas/*` + `validateSchema`).
-- Password hashing: `bcrypt` is used to hash passwords on registration.
-- Timing-attack mitigation: login uses a constant dummy bcrypt hash when user is not found to keep response time consistent.
-- JWT authentication: `authenticateToken` middleware validates tokens and injects `req.user`.
-
-Note: `cors` is listed in `package.json` but not enabled in `src/app.ts`.
-
-## License & Author
-
-- **License:** This is a personal project. All rights are reserved. Copying or distribution of the code is not permitted.
-- **Author:** Maria Humanez Barrera
 
 ---
+
+## Development Workflow
+
+This project follows a branch strategy:
+
+```text
+main
+└── feature/*
+```
+
+Examples:
+
+```text
+feature/auth-jwt
+feature/user-module
+feature/transaction-module
+```
+
+---
+
+## Author
+
+Maria Humanez Barrera
