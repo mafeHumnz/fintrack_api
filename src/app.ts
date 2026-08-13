@@ -7,6 +7,8 @@ import categoryRoutes from "./routes/category_routes.js";
 import transactionRoutes from "./routes/transaction_routes.js";
 import budgetRoutes from "./routes/budget_routes.js";
 import goalRoutes from "./routes/goal_routes.js";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
 
 const app = express();
 
@@ -20,6 +22,9 @@ app.use("/categories", categoryRoutes);
 app.use("/transactions", transactionRoutes);
 app.use("/budgets", budgetRoutes);
 app.use("/goals", goalRoutes);
+
+// Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 export default app;
