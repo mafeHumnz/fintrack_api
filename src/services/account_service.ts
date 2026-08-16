@@ -27,7 +27,7 @@ class AccountService {
         });
     } catch (error) {
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-            throw new Error("Account with this name already exists");
+            throw new Error("Account with this name already exists", { cause: error });
         }
         throw error;
     }
@@ -76,7 +76,7 @@ class AccountService {
             return await accountRepository.update(id, data);
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-                throw new Error("Account with this name already exists");
+                throw new Error("Account with this name already exists", { cause: error });
             }
             throw error;
         }
