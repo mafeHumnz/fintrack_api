@@ -69,7 +69,7 @@ describe("PATCH /transactions/:id integration tests", () => {
     }
 
     const isCredit = account.type === AccountType.CREDIT_CARD;
-    let nextBalance = account.balance;
+    let nextBalance: number;
 
     if (transactionType === TransactionType.EXPENSE) {
       nextBalance = isCredit ? account.balance + amount : account.balance - amount;
