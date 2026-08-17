@@ -61,7 +61,7 @@ describe("DELETE /transactions/:id integration tests", () => {
     if (!account) throw new Error("Account not found while applying transaction balance");
 
     const isCredit = account.type === AccountType.CREDIT_CARD;
-    let nextBalance = account.balance;
+    let nextBalance: number;
 
     if (transactionType === TransactionType.EXPENSE) {
       nextBalance = isCredit ? account.balance + amount : account.balance - amount;
