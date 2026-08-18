@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/src/server.js",
+    "start": "prisma migrate deploy && node dist/src/server.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --config jest.config.cjs --runInBand",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
