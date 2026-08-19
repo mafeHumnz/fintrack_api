@@ -1,6 +1,6 @@
 # FinTrack API
 
-![Tests](https://github.com/mafeHumnz/fintrack_api/actions/workflows/tests.yml/badge.svg)
+![CI](https://github.com/mafeHumnz/fintrack_api/actions/workflows/ci.yml/badge.svg)
 
 FinTrack API is a backend application for personal finance management. It allows a user to manage accounts, categories, transactions, budgets, and savings goals through a REST API built with Node.js, Express, TypeScript, Prisma, and PostgreSQL. The project focuses on business rules such as balance reconciliation, credit card handling, budget tracking by category and period, and secure authentication with JWT.
 
@@ -45,7 +45,7 @@ Based on the implementation in the routes and services:
 - Express
 - TypeScript
 - tsx (used in development via the dev script)
-- Node.js 22 in CI, based on `.github/workflows/tests.yml`
+- Node.js 22 in CI, based on `.github/workflows/ci.yml`
 
 ### ORM and database
 - Prisma ORM
@@ -120,7 +120,7 @@ This separation makes it easier to:
 ## Requirements and prerequisites
 
 ### Required
-- Node.js 22 recommended (matches CI in `.github/workflows/tests.yml`)
+- Node.js 22 recommended (matches CI in `.github/workflows/ci.yml`)
 - npm
 - Docker and Docker Compose
 - PostgreSQL (either via Docker or a local instance)
@@ -299,7 +299,7 @@ Use this when you are developing locally and want Prisma to create or apply new 
 npx prisma migrate deploy
 ```
 
-This is the command used in `.github/workflows/tests.yml` for CI. Use it for deployment or test environments where you want to apply existing migrations without creating new dev migrations.
+This is the command used in `.github/workflows/ci.yml` for CI. Use it for deployment or test environments where you want to apply existing migrations without creating new dev migrations.
 
 ### Prisma Studio
 
@@ -462,22 +462,119 @@ Note:
 
 ---
 
-## CI / GitHub Actions
+## CI/CD and deployment
 
-The GitHub Actions workflow in `.github/workflows/tests.yml` runs on:
+The project uses two separate GitHub Actions workflows:
 
-- push to main
-- pull request to main
+- `.github/workflows/ci.yml` — continuous integration
+- `.github/workflows/deploy.yml` — production deployment
 
-What it does:
-1. checks out the repository
-2. sets up Node.js 22
-3. installs dependencies with npm ci
-4. generates the Prisma client
-5. runs Prisma migrations with `npx prisma migrate deploy`
-6. executes the test suite with `npm test`
+### Continuous integration
 
-This workflow also starts a PostgreSQL 17 service using a test database so the tests can run against a real database.
+The CI workflow runs on every push to `main` and every pull request targeting `main`.
+
+Its jobs run sequentially:
+
+```text
+lint -> integration-test -> build
+```
+
+The jobs are chained with `needs` so that each stage runs only after the previous stage succeeds.
+
+#### Lint
+
+The `lint` job uses Node.js 22, installs dependencies with `npm ci`, and runs:
+
+```bash
+npm run lint
+```
+
+#### Integration tests
+
+The `integration-test` job uses `needs: lint`, so it starts only after linting passes. It:
+
+- starts a PostgreSQL 16 service
+- generates the Prisma client with `npx prisma generate`
+- applies migrations with `npx prisma migrate deploy`
+- runs the test suite with `npm test`
+
+The tests run against the PostgreSQL service configured by the workflow.
+
+#### Build
+
+The `build` job uses `needs: integration-test`, so it starts only after the integration tests pass. It generates the Prisma client and compiles the project with:
+
+```bash
+npm run build
+```
+
+This sequence prevents a failed lint check or failed integration test from allowing the build stage to run.
+
+### Production deployment
+
+The deployment workflow is defined in `.github/workflows/deploy.yml`. It listens for the completion of the `CI` workflow on `main` through `workflow_run`:
+
+```yaml
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types:
+      - completed
+```
+
+The production deployment job runs only when the CI workflow completes successfully:
+
+```yaml
+if: ${{ github.event.workflow_run.conclusion == 'success' }}
+```
+
+When CI passes, GitHub Actions sends a POST request to the Render API to trigger the production deployment. The workflow reads `RENDER_SERVICE_ID` and `RENDER_API_KEY` from GitHub Actions secrets; their values are not stored in the repository.
+
+The deployment flow is:
+
+```text
+push or pull request to main
+  |
+  v
+CI: lint -> integration-test -> build
+  |
+  v
+successful CI completion on main
+  |
+  v
+GitHub Actions triggers Render deployment
+```
+
+### Render configuration
+
+The production API is deployed on Render with:
+
+- a Node.js Web Service
+- a managed PostgreSQL database
+
+The production start script applies Prisma migrations before starting the compiled API:
+
+```bash
+prisma migrate deploy && node dist/src/server.js
+```
+
+Therefore, existing Prisma migrations run automatically as part of each production start/deploy. Render Auto-Deploy is disabled so production deployment is controlled by GitHub Actions after the CI workflow has completed successfully.
+
+The Render service type, managed database, and Auto-Deploy setting are platform configuration details; they are not declared in the workflow YAML files.
+
+### Production environment variables
+
+The application validates these variables in `src/config/env.ts`:
+
+| Variable | Description |
+|---|---|
+| `NODE_ENV` | Application environment. Supported values are `development`, `production`, and `test`. |
+| `PORT` | Port used by the HTTP server. |
+| `DATABASE_URL` | PostgreSQL connection string used by Prisma. |
+| `JWT_SECRET` | Secret used to sign and verify JWT tokens. |
+
+Configure these variables directly in the Render dashboard. Do not put production values or secrets in versioned environment files.
 
 ---
 
