@@ -72,9 +72,15 @@ jobs:
       - name: Run tests
         run: npm test
 
-  build:
+    build:
     runs-on: ubuntu-latest
     needs: integration-test
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PORT: 3000
 
     steps:
       - name: Checkout code
@@ -91,8 +97,6 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
 
       - name: Build
         run: npm run build
