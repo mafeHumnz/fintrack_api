@@ -1,34 +1,28 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci
-
       - name: Run lint
         run: npm run lint
 
   integration-test:
     runs-on: ubuntu-latest
     needs: lint
-
     services:
       postgres:
         image: postgres:16
@@ -43,60 +37,47 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       PORT: 3000
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci
-
       - name: Generate Prisma Client
         run: npx prisma generate
-
       - name: Run database migrations
         run: npx prisma migrate deploy
-
       - name: Run tests
         run: npm test
 
-    build:
+  build:
     runs-on: ubuntu-latest
     needs: integration-test
-
     env:
       NODE_ENV: test
       DATABASE_URL: postgresql://usuario:admin@localhost:5433/fintrack
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       PORT: 3000
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "npm"
-
       - name: Install dependencies
         run: npm ci
-
       - name: Generate Prisma Client
         run: npx prisma generate
-
       - name: Build
         run: npm run build
